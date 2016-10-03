@@ -118,13 +118,32 @@ def main():
         else:
             clinton_dictionary[word] = 1
 
-    interesting_words = ['they','very','because','what','think','would', 'be', 'great', 'bad', 'worst']
+    common_tuples = []
+    for item in trump_dictionary.keys():
+        common_tuples.append((trump_dictionary[item], item, 'Trump'))
+    for item in clinton_dictionary.keys():
+        common_tuples.append((clinton_dictionary[item], item, 'Clinton'))
+
+    common_tuples.sort(key=(lambda x:x[0]), reverse=True)
+
+    filtered_tuples = [item for item in common_tuples if item[0] > 50]
+
+    print(filtered_tuples)
+
+    interesting_words = ['they','very','because','what','think','would', 'be', 'great', 'bad', 'worst','look']
     for word in interesting_words:
         print(word.upper())
         print('Trump frequency: ' + str(trump_dictionary[word]))
         print('Trump percentage: ' + str(round(100 * trump_dictionary[word] / len(trump_words), 2)) + '%')
         print('Clinton frequency: ' + str(clinton_dictionary[word]))
         print('Clinton percentage: ' + str(round(100 * clinton_dictionary[word] / len(clinton_words), 2)) + '%')
+
+    print(clinton_dictionary)
+    create_frequent_histogram(trump_dictionary, 50, 'Most frequent words used by Trump in first debate','r')
+
+    create_frequent_histogram(clinton_dictionary, 37, 'Most frequent words used by Clinton in first debate','b')
+
+    create_interlocking_frequent_histogram(filtered_tuples, 'Most freq words', 'r')
 
     #######
     exit(0)
@@ -138,19 +157,6 @@ def main():
     print('TRUMP\'S WORDS')
     for word in sorted_trump_words:
         print("(" + str(word[0]) + ", " + str(word[1]) + ")")
-
-    print(clinton_dictionary)
-    #create_frequent_histogram(trump_dictionary, 50, 'Most frequent words used by Trump in first debate')
-
-    create_frequent_histogram(clinton_dictionary, 37, 'Most frequent words used by Clinton in first debate')
-
-
-
-    for word in clinton_words:
-        if word in clinton_dictionary:
-            clinton_dictionary[word] += 1
-        else:
-            clinton_dictionary[word] = 1
 
     sorted_clinton_words = []
     for pair in sorted(clinton_dictionary.items(), key=lambda x: x[1]):
@@ -246,7 +252,7 @@ def get_words_from_lines(lines):
 
 
 
-def create_frequent_histogram(dictionary, min_occurrences, title):
+def create_frequent_histogram(dictionary, min_occurrences, title, color):
 
     frequent_dictionary = {}
     for word in dictionary:
@@ -260,8 +266,28 @@ def create_frequent_histogram(dictionary, min_occurrences, title):
     sorted_values.reverse()
 
     indexes = np.arange(len(sorted_keys))
+
+    matplotlib.rcParams['patch.facecolor'] = color
+
     plt.bar(indexes, sorted_values)
     plt.xticks(indexes + 0.3, sorted_keys)
+    plt.xlabel('Word')
+    plt.ylabel('Frequency')
+    plt.title(title)
+
+    plt.show()
+
+def create_interlocking_frequent_histogram(filtered_tuples, title, othercolor):
+    indexes = np.arange(len(filtered_tuples))
+
+
+    #matplotlib.rcParams['patch.facecolor'] = color
+
+    bar_list = plt.bar(indexes, [item[0] for item in filtered_tuples])
+    for i in range(len(filtered_tuples)):
+        if filtered_tuples[i][2] == 'Trump':
+            bar_list[i].set_color(othercolor)
+    plt.xticks(np.arange(len(filtered_tuples)) + 0.3, [item[1] for item in filtered_tuples])
     plt.xlabel('Word')
     plt.ylabel('Frequency')
     plt.title(title)
