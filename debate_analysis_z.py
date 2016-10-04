@@ -15,6 +15,11 @@ special_words = ['I', 'Lester', 'Holt', 'Hillary', 'Clinton', 'Donald', 'Trump',
 capitalized_words = ["I", "I'd", "I'll", "I'm", "I've", "Mr.", "Donald", "Trump", "Lester", "Secretary", "Hillary",
                      "OK", "China", "Iran", "NAFTA", "Republicans"]
 
+special_tokens = ["Mr.", "J.", "St."]
+
+nonword_tokens = [",", ":", ";", "-", "—", "...", "\"", "'"]
+
+
 def main():
 
     words = get_words_from_file('debate_transcript2.txt')
@@ -193,8 +198,9 @@ def partition_words(text, moderator, candidateA, candidateB):
     return moderator_words, candidateA_words, candidateB_words
 
 def separate_nonword_tokens(words):
+
     for word in words:
-        matchObj = re.search(r'\W*',word)
+        matchObj = re.search(r'\W+',word)
         if matchObj:
             print(word)
 
