@@ -7,10 +7,9 @@ import matplotlib.pyplot as plt
 import matplotlib
 from collections import Counter
 from nltk.book import Text
-#from nltk.book import Text
 
 special_words = ['I', 'Lester', 'Holt', 'Hillary', 'Clinton', 'Donald', 'Trump', 'Mr', 'Secretary', 'OK', 'ISIS',
-                     'China', 'Sidney', 'Blumenthal', 'Republicans', 'NAFTA', 'Iran', 'Sean']
+                 'China', 'Sidney', 'Blumenthal', 'Republicans', 'NAFTA', 'Iran', 'Sean']
 
 capitalized_words = ["I", "I'd", "I'll", "I'm", "I've", "Mr.", "Donald", "Trump", "Lester", "Secretary", "Hillary",
                      "OK", "China", "Iran", "NAFTA", "Republicans"]
@@ -21,26 +20,21 @@ nonword_tokens = [",", ":", ";", "-", "—", "...", "\"", "'"]
 
 
 def main():
-
     words = get_words_from_file('debate_transcript2.txt')
 
-    holt_words, clinton_words, trump_words = partition_words(words, "HOLT","CLINTON","TRUMP")
+    holt_words, clinton_words, trump_words = partition_words(words, "HOLT", "CLINTON", "TRUMP")
 
-    separate_nonword_tokens(holt_words)
-    #remove_nonwords(clinton_words)
-    #remove_nonwords(trump_words)
+    holt_words = separate_nonword_tokens(holt_words)
+    clinton_words = separate_nonword_tokens(clinton_words)
+    trump_words = separate_nonword_tokens(trump_words)
 
-    #decapitalize(holt_words)
-    #decapitalize(clinton_words)
-    #decapitalize(trump_words)
-
+    holt_text = Text(holt_words)
+    clinton_text = Text(clinton_words)
     trump_text = Text(trump_words)
 
-
+    #######
     exit(0)
-
-    lowercase_letters = [chr(c) for c in range(ord('a'), ord('z') + 1)]
-    uppercase_letters = [chr(c) for c in range(ord('A'), ord('Z') + 1)]
+    #######
 
     trump_dictionary = {}
     clinton_dictionary = {}
@@ -63,11 +57,11 @@ def main():
     for item in clinton_dictionary.keys():
         common_tuples.append((clinton_dictionary[item], item, 'Clinton'))
 
-    common_tuples.sort(key=(lambda x:x[0]), reverse=True)
+    common_tuples.sort(key=(lambda x: x[0]), reverse=True)
 
     filtered_tuples = [item for item in common_tuples if item[0] > 50]
 
-    interesting_words = ['they','very','because','what','think','would', 'be', 'great', 'bad', 'worst','look']
+    interesting_words = ['they', 'very', 'because', 'what', 'think', 'would', 'be', 'great', 'bad', 'worst', 'look']
 
     for word in interesting_words:
         print(word.upper())
@@ -76,15 +70,11 @@ def main():
         print('Clinton frequency: ' + str(clinton_dictionary[word]))
         print('Clinton percentage: ' + str(round(100 * clinton_dictionary[word] / len(clinton_words), 2)) + '%')
 
-    create_frequent_histogram(trump_dictionary, 50, 'Most frequent words used by Trump in first debate','r')
+    create_frequent_histogram(trump_dictionary, 50, 'Most frequent words used by Trump in first debate', 'r')
 
-    create_frequent_histogram(clinton_dictionary, 37, 'Most frequent words used by Clinton in first debate','b')
+    create_frequent_histogram(clinton_dictionary, 37, 'Most frequent words used by Clinton in first debate', 'b')
 
     create_interlocking_frequent_histogram(filtered_tuples, 'Most freq words', 'r')
-
-    #######
-    exit(0)
-    #######
 
     sorted_trump_words = []
     for pair in sorted(trump_dictionary.items(), key=lambda x: x[1]):
@@ -113,49 +103,15 @@ def main():
         foldin.append(word)
     random.shuffle(foldin)
 
-    #print(' '.join(foldin))
-    #print('~~~~~~~~~~~~~~~~~~~')
+    # print(' '.join(foldin))
+    # print('~~~~~~~~~~~~~~~~~~~')
     # just Trump words
     cutup = []
     for word in trump_words:
         cutup.append(word)
     random.shuffle(cutup)
-    #print(' '.join(cutup))
+    # print(' '.join(cutup))
 
-def parse_transcript():
-
-
-
-    holt_lines, clinton_lines, trump_lines = [], [], []
-
-    holt = False
-    clinton = False
-    trump = False
-
-    # parse debate transcript
-    with open('debate_transcript2.txt', 'r') as f:
-        for line in f:
-            if "HOLT:" in line:
-                holt_lines.append(line.split('HOLT: ')[1].replace('\n', ''))
-                holt, clinton, trump = True, False, False
-            elif "CLINTON:" in line:
-                clinton_lines.append(line.split('CLINTON: ')[1].replace('\n', ''))
-                holt, clinton, trump = False, True, False
-            elif "TRUMP:" in line:
-                trump_lines.append(line.split('TRUMP: ')[1].replace('\n', ''))
-                holt, clinton, trump = False, False, True
-            else:
-                if line != '\n':
-                    if holt:
-                        holt_lines.append(line.replace('\n', ''))
-                    elif clinton:
-                        clinton_lines.append(line.replace('\n', ''))
-                    elif trump:
-                        trump_lines.append(line.replace('\n', ''))
-                    else:
-                        print('Something unexpected')
-                        print('Got line: ' + line)
-    return holt_lines, clinton_lines, trump_lines
 
 def get_words_from_file(filename):
     # read file replacing newlines with space
@@ -172,13 +128,12 @@ def get_words_from_file(filename):
 
     return words
 
+
 # split text into each speaker's words
 # the last three arguments are tokens delineating each
 # speaker in the original text (e.g. "HOLT", "CLINTON", "TRUMP")
 def partition_words(text, moderator, candidateA, candidateB):
-    moderator_words = []
-    candidateA_words = []
-    candidateB_words = []
+    moderator_words, candidateA_words, candidateB_words = [], [], []
 
     # assume text begins with moderator
     current = moderator_words
@@ -197,40 +152,52 @@ def partition_words(text, moderator, candidateA, candidateB):
 
     return moderator_words, candidateA_words, candidateB_words
 
+
+# split up words with non-letter characters
+# for use with nltk Text
 def separate_nonword_tokens(words):
-
+    separated_words = []
     for word in words:
-        matchObj = re.search(r'\W+',word)
-        if matchObj:
-            print(word)
+        quoted_match = re.search(r'(?P<open_quote_only>")(?P<after_word>\w+)|(?P<before_word>\w+)'
+                                 r'(?P<close_quote_only>")|(?P<open_quote>")(?P<between_word>\w+)'
+                                 r'(?P<close_quote>")', word)
+        punctuated_match = re.search(r'(?P<open_quote>"?)(?P<word>\w+)(?P<punctuation>[.,;:?!]|\.\.\.)'
+                                     r'(?P<close_quote>"?)', word)
+        apostrophe_match = re.search(r'(?P<open_quote>"?)(?P<first_part>\w*)(?P<apostrophe>’)(?P<second_part>\w+)'
+                                     r'(?P<punctuation>[.,;:?!]?|\.\.\.?)(?P<close_quote>"?)', word)
+        if quoted_match:
+            for token in quoted_match.groups():
+                if token:
+                    separated_words.append(token)
+        if apostrophe_match:
+            print(apostrophe_match.groups())
+            for token in apostrophe_match.groups():
+                if token:
+                    separated_words.append(token)
+        elif punctuated_match and not special_token(word):
+            print(punctuated_match.groups())
+            for token in punctuated_match.groups():
+                if token:
+                    separated_words.append(token)
+        else:
+            separated_words.append(word)
+    return separated_words
 
 
+def special_token(word):
+    global special_tokens
 
+    for token in special_tokens:
+        if token in word:
+            return True
+    return False
 
-def decapitalize(words):
-    global capitalized_words
-
-    for i in range(len(words)):
-        # look for ends of sentences
-        matchObj = re.search(r'.*[.?!]',words[i])
-        c = ''
-        if '.' in words[i]:
-            c = '.'
-        elif '?' in words[i]:
-            c = '?'
-        elif '!' in words[i]:
-            c = '!'
-        if matchObj and i + 1 < len(words):
-            print(c + ' ' + words[i+1])
-            if words[i+1] not in capitalized_words:
-                words[i+1] = words[i+1].lower()
 
 def create_frequent_histogram(dictionary, min_occurrences, title, color):
-
     frequent_dictionary = {}
     for word in dictionary:
-      if dictionary[word] > min_occurrences:
-        frequent_dictionary[word] = dictionary[word]
+        if dictionary[word] > min_occurrences:
+            frequent_dictionary[word] = dictionary[word]
 
     sorted_values = sorted(frequent_dictionary.values())
     sorted_keys = sorted(frequent_dictionary, key=frequent_dictionary.get)
@@ -250,11 +217,11 @@ def create_frequent_histogram(dictionary, min_occurrences, title, color):
 
     plt.show()
 
+
 def create_interlocking_frequent_histogram(filtered_tuples, title, othercolor):
     indexes = np.arange(len(filtered_tuples))
 
-
-    #matplotlib.rcParams['patch.facecolor'] = color
+    # matplotlib.rcParams['patch.facecolor'] = color
 
     bar_list = plt.bar(indexes, [item[0] for item in filtered_tuples])
     for i in range(len(filtered_tuples)):
@@ -266,7 +233,6 @@ def create_interlocking_frequent_histogram(filtered_tuples, title, othercolor):
     plt.title(title)
 
     plt.show()
-
 
 
 main()
