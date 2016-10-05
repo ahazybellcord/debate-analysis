@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 from collections import Counter
-from nltk.book import Text
+from nltk.book import *
 
 special_words = ['I', 'Lester', 'Holt', 'Hillary', 'Clinton', 'Donald', 'Trump', 'Mr', 'Secretary', 'OK', 'ISIS',
                  'China', 'Sidney', 'Blumenthal', 'Republicans', 'NAFTA', 'Iran', 'Sean']
@@ -20,7 +20,7 @@ nonword_tokens = [",", ":", ";", "-", "—", "...", "\"", "'"]
 
 
 def main():
-    words = get_words_from_file('debate_transcript2.txt')
+    words = get_words_from_file('debate_transcript.txt')
 
     holt_words, clinton_words, trump_words = partition_words(words, "HOLT", "CLINTON", "TRUMP")
 
@@ -31,6 +31,40 @@ def main():
     holt_text = Text(holt_words)
     clinton_text = Text(clinton_words)
     trump_text = Text(trump_words)
+
+    trump_text.concordance("tremendous")
+
+    trump_text.concordance("great")
+
+    trump_text.concordance("good")
+
+    trump_text.concordance("bad")
+
+    similar_words_to_search = ["tremendous","very","bad"]
+    for word in similar_words_to_search:
+        print("Words similar to " + word)
+        trump_text.similar(word)
+
+
+    trump_text.dispersion_plot(["good","better","best","bad","worse","worst","great","tremendous","terrible",
+                                "very","really","extremely","because","I","me","Hillary","Clinton","Obama",
+                                "America","country","wealthy"])
+
+    clinton_text.dispersion_plot(["good","better","best","bad","worse","worst","great","tremendous","terrible",
+                                "very","really","extremely","because","I","me","Donald","Trump","Obama",
+                                "America","country","wealthy"])
+
+    print(len(set(trump_text)) / len(trump_text))
+    print(len(set(clinton_text)) / len(clinton_text))
+
+    fdist = FreqDist(trump_text)
+    fdist2 = FreqDist(clinton_text)
+    print(fdist.most_common(50))
+    print(fdist2.most_common(50))
+
+
+    fdist.plot(50, cumulative=True)
+    fdist2.plot(50, cumulative=True)
 
     #######
     exit(0)
@@ -170,12 +204,12 @@ def separate_nonword_tokens(words):
                 if token:
                     separated_words.append(token)
         if apostrophe_match:
-            print(apostrophe_match.groups())
+            #print(apostrophe_match.groups())
             for token in apostrophe_match.groups():
                 if token:
                     separated_words.append(token)
         elif punctuated_match and not special_token(word):
-            print(punctuated_match.groups())
+            #print(punctuated_match.groups())
             for token in punctuated_match.groups():
                 if token:
                     separated_words.append(token)
