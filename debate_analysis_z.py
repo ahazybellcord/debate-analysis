@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import re
 import random
 import numpy as np
@@ -20,51 +21,62 @@ nonword_tokens = [",", ":", ";", "-", "—", "...", "\"", "'"]
 
 
 def main():
-    words = get_words_from_file('debate_transcript.txt')
+    if len(sys.argv) == 1:
+        text_file = input("Enter text to analyze: ")
+        moderator = input("Last name of moderator: ")
+        speaker_one = input("Last name of first speaker: ")
+        speaker_two = input("Last name of second speaker: ")
+    else:
+        text_file = sys.argv[1]
+        moderator = sys.argv[2]
+        speaker_one = sys.argv[3]
+        speaker_two = sys.argv[4]
 
-    holt_words, clinton_words, trump_words = partition_words(words, "HOLT", "CLINTON", "TRUMP")
+    words = get_words_from_file(text_file)
 
-    holt_words = separate_nonword_tokens(holt_words)
-    clinton_words = separate_nonword_tokens(clinton_words)
-    trump_words = separate_nonword_tokens(trump_words)
+    moderator_words, speaker_one_words, speaker_two_words = partition_words(words,
+                                                                            moderator.upper(),
+                                                                            speaker_one.upper(),
+                                                                            speaker_two.upper())
 
-    holt_text = Text(holt_words)
-    clinton_text = Text(clinton_words)
-    trump_text = Text(trump_words)
+    moderator_words = separate_nonword_tokens(moderator_words)
+    speaker_one_words = separate_nonword_tokens(speaker_one_words)
+    speaker_two_words = separate_nonword_tokens(speaker_two_words)
 
-    trump_text.concordance("tremendous")
+    moderator_text = Text(moderator_words)
+    speaker_one_text = Text(speaker_one_words)
+    speaker_two_text = Text(speaker_two_words)
 
-    trump_text.concordance("great")
+    speaker_two_text.concordance("tremendous")
 
-    trump_text.concordance("good")
+    speaker_two_text.concordance("great")
 
-    trump_text.concordance("bad")
+    speaker_two_text.concordance("good")
 
-    similar_words_to_search = ["tremendous","very","bad"]
-    for word in similar_words_to_search:
-        print("Words similar to " + word)
-        trump_text.similar(word)
+    speaker_two_text.concordance("bad")
+
+    speaker_one_text.concordance("trust")
 
 
-    trump_text.dispersion_plot(["good","better","best","bad","worse","worst","great","tremendous","terrible",
+    print("Dispersion plot for " + speaker_two)
+    speaker_two_text.dispersion_plot(["good","better","best","bad","worse","worst","great","tremendous","terrible",
                                 "very","really","extremely","because","I","me","Hillary","Clinton","Obama",
-                                "America","country","wealthy"])
+                                "America","country","money","trillion","wealthy"])
 
-    clinton_text.dispersion_plot(["good","better","best","bad","worse","worst","great","tremendous","terrible",
+    print("Dispersion plot for " + speaker_one)
+    speaker_one_text.dispersion_plot(["good","better","best","bad","worse","worst","great","tremendous","terrible",
                                 "very","really","extremely","because","I","me","Donald","Trump","Obama",
-                                "America","country","wealthy"])
+                                "America","country","money","trillion","wealthy"])
 
-    print(len(set(trump_text)) / len(trump_text))
-    print(len(set(clinton_text)) / len(clinton_text))
+    print("Lexical diversity for " + speaker_two)
+    print(len(set(speaker_two_text)) / len(speaker_two_text))
+    print("Lexical diversity for " + speaker_one)
+    print(len(set(speaker_one_text)) / len(speaker_one_text))
 
-    fdist = FreqDist(trump_text)
-    fdist2 = FreqDist(clinton_text)
-    print(fdist.most_common(50))
-    print(fdist2.most_common(50))
-
-
-    fdist.plot(50, cumulative=True)
-    fdist2.plot(50, cumulative=True)
+    print(speaker_two + " collocations")
+    speaker_two_text.collocations()
+    print(speaker_one + " collocations")
+    speaker_one_text.collocations()
 
     #######
     exit(0)
@@ -73,13 +85,13 @@ def main():
     trump_dictionary = {}
     clinton_dictionary = {}
 
-    for word in trump_words:
+    for word in speaker_two_words:
         if word in trump_dictionary:
             trump_dictionary[word] += 1
         else:
             trump_dictionary[word] = 1
 
-    for word in clinton_words:
+    for word in speaker_one_words:
         if word in clinton_dictionary:
             clinton_dictionary[word] += 1
         else:
@@ -100,9 +112,9 @@ def main():
     for word in interesting_words:
         print(word.upper())
         print('Trump frequency: ' + str(trump_dictionary[word]))
-        print('Trump percentage: ' + str(round(100 * trump_dictionary[word] / len(trump_words), 2)) + '%')
+        print('Trump percentage: ' + str(round(100 * trump_dictionary[word] / len(speaker_two_words), 2)) + '%')
         print('Clinton frequency: ' + str(clinton_dictionary[word]))
-        print('Clinton percentage: ' + str(round(100 * clinton_dictionary[word] / len(clinton_words), 2)) + '%')
+        print('Clinton percentage: ' + str(round(100 * clinton_dictionary[word] / len(speaker_one_words), 2)) + '%')
 
     create_frequent_histogram(trump_dictionary, 50, 'Most frequent words used by Trump in first debate', 'r')
 
@@ -131,9 +143,9 @@ def main():
     # cut-up/fold-in Trump/Clinton words
 
     foldin = []
-    for word in trump_words:
+    for word in speaker_two_words:
         foldin.append(word)
-    for word in clinton_words:
+    for word in speaker_one_words:
         foldin.append(word)
     random.shuffle(foldin)
 
@@ -141,7 +153,7 @@ def main():
     # print('~~~~~~~~~~~~~~~~~~~')
     # just Trump words
     cutup = []
-    for word in trump_words:
+    for word in speaker_two_words:
         cutup.append(word)
     random.shuffle(cutup)
     # print(' '.join(cutup))
