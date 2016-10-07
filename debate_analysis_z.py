@@ -47,27 +47,6 @@ def main():
     speaker_one_text = Text(speaker_one_words)
     speaker_two_text = Text(speaker_two_words)
 
-    speaker_two_text.concordance("tremendous")
-
-    speaker_two_text.concordance("great")
-
-    speaker_two_text.concordance("good")
-
-    speaker_two_text.concordance("bad")
-
-    speaker_one_text.concordance("trust")
-
-
-    print("Dispersion plot for " + speaker_two)
-    speaker_two_text.dispersion_plot(["good","better","best","bad","worse","worst","great","tremendous","terrible",
-                                "very","really","extremely","because","I","me","Hillary","Clinton","Obama",
-                                "America","country","money","trillion","wealthy"])
-
-    print("Dispersion plot for " + speaker_one)
-    speaker_one_text.dispersion_plot(["good","better","best","bad","worse","worst","great","tremendous","terrible",
-                                "very","really","extremely","because","I","me","Donald","Trump","Obama",
-                                "America","country","money","trillion","wealthy"])
-
     print("Lexical diversity for " + speaker_two)
     print(len(set(speaker_two_text)) / len(speaker_two_text))
     print("Lexical diversity for " + speaker_one)
@@ -77,6 +56,35 @@ def main():
     speaker_two_text.collocations()
     print(speaker_one + " collocations")
     speaker_one_text.collocations()
+
+    print("Thirty most used words by " + speaker_one)
+    fdist = FreqDist(speaker_one_text)
+    most_common = fdist.most_common(50)
+    most_common_words = [freq[0] for freq in most_common]
+    for word in most_common_words:
+        # remove non-words
+        matchObj = re.match(r'\w+', word)
+        if not matchObj:
+            most_common_words.remove(word)
+    del most_common_words[30:]
+
+
+    print(most_common)
+    speaker_one_text.dispersion_plot(most_common_words)
+
+    print("Thirty most used words by " + speaker_two)
+    fdist = FreqDist(speaker_two_text)
+    most_common = fdist.most_common(50)
+    most_common_words = [freq[0] for freq in most_common]
+    for word in most_common_words:
+        # remove non-words
+        matchObj = re.match(r'\w+', word)
+        if not matchObj:
+            most_common_words.remove(word)
+    del most_common_words[30:]
+    speaker_two_text.dispersion_plot(most_common_words)
+
+
 
     #######
     exit(0)
