@@ -52,6 +52,15 @@ def main():
     print("Lexical diversity for " + speaker_one)
     print(len(set(speaker_one_text)) / len(speaker_one_text))
 
+    count = 0
+    for word in speaker_two_words:
+        if word == "tremendous":
+            count += 1
+    print("How many times did Trump say tremendous?")
+    print(str(count))
+
+    speaker_two_text.concordance("tremenendous")
+
     print(speaker_two + " collocations")
     speaker_two_text.collocations()
     print(speaker_one + " collocations")
@@ -67,21 +76,20 @@ def main():
         if not matchObj:
             most_common_words.remove(word)
     del most_common_words[30:]
-
-
-    print(most_common)
+    print(most_common_words)
     speaker_one_text.dispersion_plot(most_common_words)
 
-    print("Thirty most used words by " + speaker_two)
+    print("Fifty most used words by " + speaker_two)
     fdist = FreqDist(speaker_two_text)
-    most_common = fdist.most_common(50)
+    most_common = fdist.most_common(100)
     most_common_words = [freq[0] for freq in most_common]
     for word in most_common_words:
         # remove non-words
         matchObj = re.match(r'\w+', word)
         if not matchObj:
             most_common_words.remove(word)
-    del most_common_words[30:]
+    del most_common_words[50:]
+    print(most_common_words)
     speaker_two_text.dispersion_plot(most_common_words)
 
 
